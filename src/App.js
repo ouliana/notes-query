@@ -2,12 +2,15 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { getNotes, createNote, updateNote } from './requests';
 
 function App() {
-  const result = useQuery('notes', getNotes);
+  const result = useQuery('notes', getNotes, {
+    refetchOnWindowFocus: false,
+  });
   const queryClient = useQueryClient();
 
   const newNoteMutation = useMutation(createNote, {
-    onSuccess: function () {
-      return queryClient.invalidateQueries('notes');
+    onSuccess: function (newNote) {
+      const notes = queryClient.getQueryData('notes');
+      queryClient.setQueryData('notes', notes.concat(newNote));
     },
   });
 
