@@ -1,8 +1,21 @@
-import { useQuery } from 'react-query';
-import { getNotes } from './requests';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { getNotes, createNote, updateNote } from './requests';
 
 function App() {
   const result = useQuery('notes', getNotes);
+  const queryClient = useQueryClient();
+
+  const newNoteMutation = useMutation(createNote, {
+    onSuccess: function () {
+      return queryClient.invalidateQueries('notes');
+    },
+  });
+
+  const updateNoteMutation = useMutation(updateNote, {
+    onSuccess: function () {
+      return queryClient.invalidateQueries('notes');
+    },
+  });
 
   if (result.isLoading) {
     return <div>loading data</div>;
@@ -33,11 +46,11 @@ function App() {
     event.preventDefault();
     var content = event.target.note.value;
     event.target.note.value = '';
-    console.log(content);
+    newNoteMutation.mutate({ content, important: true });
   }
 
   function toggleImportance(note) {
-    console.log('toggle importance of ', note.id);
+    updateNoteMutation.mutate({ ...note, important: !note.important });
   }
 }
 
